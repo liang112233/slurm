@@ -147,7 +147,6 @@ struct option long_options[] = {
 	{"ntasks",           required_argument, 0, 'n'},
 	{"nodes",            required_argument, 0, 'N'},
 	{"output",           required_argument, 0, 'o'},
-	{"partition",        required_argument, 0, 'p'},
 	{"quiet",            no_argument,       0, 'Q'},
 	{"relative",         required_argument, 0, 'r'},
 	{"core-spec",        required_argument, 0, 'S'},
@@ -698,7 +697,6 @@ static void _opt_default(void)
 	opt.ntasks_set			= false;
 	sropt.pack_group		= NULL;
 	sropt.pack_grp_bits		= NULL;
-	opt.partition			= NULL;
 	opt.pn_min_cpus			= NO_VAL;
 	opt.pn_min_memory		= NO_VAL64;
 	opt.power_flags			= 0;
@@ -797,7 +795,7 @@ env_vars_t env_vars[] = {
 {"SLURM_NTHREADS_PER_CORE",OPT_NTHREADS,NULL,               NULL             },
 {"SLURM_OPEN_MODE",     OPT_OPEN_MODE,  NULL,               NULL             },
   { "SLURM_OVERCOMMIT", 'O' },
-{"SLURM_PARTITION",     OPT_STRING,     &opt.partition,     NULL             },
+  { "SLURM_PARTITION", 'p' },
 {"SLURM_POWER",         OPT_POWER,      NULL,               NULL             },
   { "SLURM_PROFILE", LONG_OPT_PROFILE },
 {"SLURM_PROLOG",        OPT_STRING,     &sropt.prolog,      NULL             },
@@ -1309,12 +1307,6 @@ static void _set_options(const int argc, char **argv)
 				sropt.ofname = xstrdup("/dev/null");
 			else
 				sropt.ofname = xstrdup(optarg);
-			break;
-		case (int)'p':
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			xfree(opt.partition);
-			opt.partition = xstrdup(optarg);
 			break;
 		case (int) 'Q':
 			opt.quiet++;
