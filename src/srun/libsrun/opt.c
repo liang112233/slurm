@@ -141,7 +141,6 @@ struct option long_options[] = {
 	{"extra-node-info",  required_argument, 0, 'B'},
 	{"cpus-per-task",    required_argument, 0, 'c'},
 	{"cluster-constraint",required_argument,0, LONG_OPT_CLUSTER_CONSTRAINT},
-	{"dependency",       required_argument, 0, 'd'},
 	{"chdir",            required_argument, 0, 'D'},
 	{"error",            required_argument, 0, 'e'},
 	{"preserve-env",     no_argument,       0, 'E'},
@@ -614,7 +613,6 @@ static void _opt_default(void)
 		sropt.cwd_set		= false;
 		sropt.debugger_test	= false;
 		opt.delay_boot		= NO_VAL;
-		xfree(opt.dependency);
 		sropt.disable_status	= false;
 		opt.distribution	= SLURM_DIST_UNKNOWN;
 		opt.egid		= (gid_t) -1;
@@ -1272,10 +1270,6 @@ static void _set_options(const int argc, char **argv)
 			}
 			opt.cpus_set = true;
 			opt.cpus_per_task = tmp_int;
-			break;
-		case (int)'d':
-			xfree(opt.dependency);
-			opt.dependency = xstrdup(optarg);
 			break;
 		case (int)'D':
 			if (!optarg)
