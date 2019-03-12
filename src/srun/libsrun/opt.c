@@ -189,7 +189,6 @@ struct option long_options[] = {
 	{"cpu_bind",         required_argument, 0, LONG_OPT_CPU_BIND},
 	{"cpu-freq",         required_argument, 0, LONG_OPT_CPU_FREQ},
 	{"cpus-per-gpu",     required_argument, 0, LONG_OPT_CPUS_PER_GPU},
-	{"deadline",         required_argument, 0, LONG_OPT_DEADLINE},
 	{"debugger-test",    no_argument,       0, LONG_OPT_DEBUG_TS},
 	{"delay-boot",       required_argument, 0, LONG_OPT_DELAY_BOOT},
 	{"epilog",           required_argument, 0, LONG_OPT_EPILOG},
@@ -614,7 +613,6 @@ static void _opt_default(void)
 		}
 		opt.cwd			= xstrdup(buf);
 		sropt.cwd_set		= false;
-		opt.deadline		= 0;
 		sropt.debugger_test	= false;
 		opt.delay_boot		= NO_VAL;
 		xfree(opt.dependency);
@@ -1500,16 +1498,6 @@ static void _set_options(const int argc, char **argv)
 		case LONG_OPT_CPUS_PER_GPU:
 			opt.cpus_per_gpu = parse_int("cpus-per-gpu", optarg,
 						     true);
-			break;
-		case LONG_OPT_DEADLINE:
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			opt.deadline = parse_time(optarg, 0);
-			if (errno == ESLURM_INVALID_TIME_VALUE) {
-				error("Invalid deadline specification %s",
-				       optarg);
-				exit(error_exit);
-			}
 			break;
                 case LONG_OPT_EXCLUSIVE:
 			if (optarg == NULL) {
