@@ -88,7 +88,6 @@
 #define OPT_IMMEDIATE   0x03
 #define OPT_DISTRIB     0x04
 #define OPT_NODES       0x05
-#define OPT_OVERCOMMIT  0x06
 #define OPT_COMPRESS	0x07
 #define OPT_RESV_PORTS	0x09
 #define OPT_MPI         0x0c
@@ -154,7 +153,6 @@ struct option long_options[] = {
 	{"ntasks",           required_argument, 0, 'n'},
 	{"nodes",            required_argument, 0, 'N'},
 	{"output",           required_argument, 0, 'o'},
-	{"overcommit",       no_argument,       0, 'O'},
 	{"oversubscribe",    no_argument,       0, 's'},
 	{"partition",        required_argument, 0, 'p'},
 	{"quiet",            no_argument,       0, 'Q'},
@@ -720,7 +718,6 @@ static void _opt_default(void)
 	opt.ntasks_per_node		= NO_VAL; /* ntask max limits */
 	opt.ntasks_per_socket		= NO_VAL;
 	opt.ntasks_set			= false;
-	opt.overcommit			= false;
 	sropt.pack_group		= NULL;
 	sropt.pack_grp_bits		= NULL;
 	opt.partition			= NULL;
@@ -824,7 +821,7 @@ env_vars_t env_vars[] = {
 {"SLURM_NTASKS_PER_NODE", OPT_INT,      &opt.ntasks_per_node,NULL            },
 {"SLURM_NTHREADS_PER_CORE",OPT_NTHREADS,NULL,               NULL             },
 {"SLURM_OPEN_MODE",     OPT_OPEN_MODE,  NULL,               NULL             },
-{"SLURM_OVERCOMMIT",    OPT_OVERCOMMIT, NULL,               NULL             },
+  { "SLURM_OVERCOMMIT", 'O' },
 {"SLURM_PARTITION",     OPT_STRING,     &opt.partition,     NULL             },
 {"SLURM_POWER",         OPT_POWER,      NULL,               NULL             },
 {"SLURM_PROFILE",       OPT_PROFILE,    NULL,               NULL             },
@@ -991,11 +988,6 @@ _process_env_var(env_vars_t *e, const char *val)
 	case OPT_NO_KILL:
 		opt.no_kill = true;
 		break;
-
-	case OPT_OVERCOMMIT:
-		opt.overcommit = true;
-		break;
-
 	case OPT_EXCLUSIVE:
 		if (val[0] == '\0') {
 			sropt.exclusive = true;
@@ -1373,9 +1365,6 @@ static void _set_options(const int argc, char **argv)
 				sropt.ofname = xstrdup("/dev/null");
 			else
 				sropt.ofname = xstrdup(optarg);
-			break;
-		case (int)'O':
-			opt.overcommit = true;
 			break;
 		case (int)'p':
 			if (!optarg)
