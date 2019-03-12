@@ -145,7 +145,6 @@ struct option long_options[] = {
 	{"no-kill",          optional_argument, 0, 'k'},
 	{"kill-on-bad-exit", optional_argument, 0, 'K'},
 	{"label",            no_argument,       0, 'l'},
-	{"distribution",     required_argument, 0, 'm'},
 	{"ntasks",           required_argument, 0, 'n'},
 	{"nodes",            required_argument, 0, 'N'},
 	{"output",           required_argument, 0, 'o'},
@@ -589,7 +588,6 @@ static void _opt_default(void)
 		sropt.debugger_test	= false;
 		opt.delay_boot		= NO_VAL;
 		sropt.disable_status	= false;
-		opt.distribution	= SLURM_DIST_UNKNOWN;
 		opt.egid		= (gid_t) -1;
 		xfree(sropt.efname);
 		xfree(sropt.epilog);
@@ -704,7 +702,6 @@ static void _opt_default(void)
 	sropt.pack_group		= NULL;
 	sropt.pack_grp_bits		= NULL;
 	opt.partition			= NULL;
-	opt.plane_size			= NO_VAL;
 	opt.pn_min_cpus			= NO_VAL;
 	opt.pn_min_memory		= NO_VAL64;
 	opt.power_flags			= 0;
@@ -1276,17 +1273,6 @@ static void _set_options(const int argc, char **argv)
 			break;
 		case (int)'l':
 			sropt.labelio = true;
-			break;
-		case (int)'m':
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			opt.distribution = verify_dist_type(optarg,
-							     &opt.plane_size);
-			if (opt.distribution == SLURM_DIST_UNKNOWN) {
-				error("distribution type `%s' "
-				      "is not recognized", optarg);
-				exit(error_exit);
-			}
 			break;
 		case (int)'n':
 			if (!optarg)
