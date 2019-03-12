@@ -154,7 +154,6 @@ struct option long_options[] = {
 	{"unbuffered",       no_argument,       0, 'u'},
 	{"verbose",          no_argument,       0, 'v'},
 	{"version",          no_argument,       0, 'V'},
-	{"nodelist",         required_argument, 0, 'w'},
 	{"wait",             required_argument, 0, 'W'},
 	{"exclude",          required_argument, 0, 'x'},
 	{"disable-status",   no_argument,       0, 'X'},
@@ -685,7 +684,6 @@ static void _opt_default(void)
 	sropt.multi_prog_cmds		= 0;
 	opt.network			= NULL;
 	sropt.network_set_env		= false;
-	opt.nodelist			= NULL;
 	opt.nodes_set			= false;
 	sropt.nodes_set_env		= false;
 	sropt.nodes_set_opt		= false;
@@ -1339,12 +1337,6 @@ static void _set_options(const int argc, char **argv)
 		case (int)'V':
 			print_slurm_version();
 			exit(0);
-			break;
-		case (int)'w':
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			xfree(opt.nodelist);
-			opt.nodelist = xstrdup(optarg);
 			break;
 		case (int)'W':
 			if (!optarg)
