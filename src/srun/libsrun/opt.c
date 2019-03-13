@@ -102,7 +102,6 @@
 #define OPT_EXPORT	0x21
 #define OPT_HINT	0x22
 #define OPT_INT64	0x25
-#define OPT_NO_KILL       0x28
 
 extern char **environ;
 
@@ -128,7 +127,6 @@ struct option long_options[] = {
 	{"preserve-slurm-env", no_argument,     0, 'E'},
 	{"input",            required_argument, 0, 'i'},
 	{"job-name",         required_argument, 0, 'J'},
-	{"no-kill",          optional_argument, 0, 'k'},
 	{"kill-on-bad-exit", optional_argument, 0, 'K'},
 	{"label",            no_argument,       0, 'l'},
 	{"ntasks",           required_argument, 0, 'n'},
@@ -561,7 +559,6 @@ static void _opt_default(void)
 		/* Default launch msg timeout           */
 		sropt.msg_timeout		= slurm_get_msg_timeout();
 		opt.nice		= NO_VAL;
-		opt.no_kill		= false;
 		sropt.no_alloc		= false;
 		sropt.noshell		= false;
 		xfree(sropt.ofname);
@@ -720,7 +717,7 @@ env_vars_t env_vars[] = {
 {"SLURM_MPI_TYPE",      OPT_MPI,        NULL,               NULL             },
 {"SLURM_NCORES_PER_SOCKET",OPT_NCORES,  NULL,               NULL             },
 {"SLURM_NETWORK",       OPT_STRING,     &opt.network,  &sropt.network_set_env},
-{"SLURM_NO_KILL",       OPT_NO_KILL,    NULL,               NULL             },
+  { "SLURM_NO_KILL", 'k' },
 {"SLURM_NTASKS",        OPT_INT,        &opt.ntasks,        &opt.ntasks_set  },
 {"SLURM_NPROCS",        OPT_INT,        &opt.ntasks,        &opt.ntasks_set  },
 {"SLURM_NSOCKETS_PER_NODE",OPT_NSOCKETS,NULL,               NULL             },
@@ -867,9 +864,6 @@ _process_env_var(env_vars_t *e, const char *val)
 			      e->var, val);
 		} else
 			opt.nodes_set = sropt.nodes_set_env;
-		break;
-	case OPT_NO_KILL:
-		opt.no_kill = true;
 		break;
 	case OPT_EXPORT:
 		xfree(sropt.export_env);
@@ -1084,14 +1078,6 @@ static void _set_options(const int argc, char **argv)
 			sropt.job_name_set_cmd = true;
 			xfree(opt.job_name);
 			opt.job_name = xstrdup(optarg);
-			break;
-		case (int)'k':
-			if (optarg &&
-			    (!xstrcasecmp(optarg, "off") ||
-			     !xstrcasecmp(optarg, "no"))) {
-				opt.no_kill = false;
-			} else
-				opt.no_kill = true;
 			break;
 		case (int)'K':
 			if (optarg)
