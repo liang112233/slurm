@@ -162,7 +162,6 @@ struct option long_options[] = {
 	{"cores-per-socket", required_argument, 0, LONG_OPT_CORESPERSOCKET},
 	{"cpu-bind",         required_argument, 0, LONG_OPT_CPU_BIND},
 	{"cpu_bind",         required_argument, 0, LONG_OPT_CPU_BIND},
-	{"cpus-per-gpu",     required_argument, 0, LONG_OPT_CPUS_PER_GPU},
 	{"debugger-test",    no_argument,       0, LONG_OPT_DEBUG_TS},
 	{"delay-boot",       required_argument, 0, LONG_OPT_DELAY_BOOT},
 	{"epilog",           required_argument, 0, LONG_OPT_EPILOG},
@@ -562,7 +561,6 @@ static void _opt_default(void)
 		sropt.ckpt_interval		= 0;
 		xfree(sropt.ckpt_interval_str);
 		xfree(sropt.cmd_name);
-		opt.cpus_per_gpu	= 0;
 		if ((getcwd(buf, MAXPATHLEN)) == NULL) {
 			error("getcwd failed: %m");
 			exit(error_exit);
@@ -733,7 +731,7 @@ env_vars_t env_vars[] = {
 {"SLURM_CPUS_PER_TASK", OPT_INT,        &opt.cpus_per_task, &opt.cpus_set    },
 {"SLURM_CPU_BIND",      OPT_CPU_BIND,   NULL,               NULL             },
   { "SLURM_CPU_FREQ_REQ", LONG_OPT_CPU_FREQ },
-{"SLURM_CPUS_PER_GPU",  OPT_INT,        &opt.cpus_per_gpu,  NULL             },
+  { "SLURM_CPUS_PER_GPU", LONG_OPT_CPUS_PER_GPU },
 {"SLURM_DELAY_BOOT",    OPT_DELAY_BOOT, NULL,               NULL             },
 {"SLURM_DEPENDENCY",    OPT_STRING,     &opt.dependency,    NULL             },
 {"SLURM_DISABLE_STATUS",OPT_INT,        &sropt.disable_status,NULL           },
@@ -1292,10 +1290,6 @@ static void _set_options(const int argc, char **argv)
 		case (int)'Z':
 			sropt.no_alloc = true;
 			uname(&name);
-			break;
-		case LONG_OPT_CPUS_PER_GPU:
-			opt.cpus_per_gpu = parse_int("cpus-per-gpu", optarg,
-						     true);
 			break;
 		case LONG_OPT_EXPORT:
 			xfree(sropt.export_env);
