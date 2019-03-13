@@ -302,7 +302,7 @@ typedef struct slurm_options {
 	gid_t gid;			/* local gid			*/
 	uid_t euid;			/* effective user --uid=user	*/
 	gid_t egid;			/* effective group --gid=group	*/
-	char *cwd;			/* current working directory	*/
+	char *chdir;			/* --chdir			*/
 	int ntasks;			/* --ntasks			*/
 	bool ntasks_set;		/* ntasks explicitly set	*/
 	int cpus_per_task;		/* --cpus-per-task=n		*/
