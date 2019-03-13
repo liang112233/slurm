@@ -163,7 +163,6 @@ struct option long_options[] = {
 	{"hint",             required_argument, 0, LONG_OPT_HINT},
 	{"jobid",            required_argument, 0, LONG_OPT_JOBID},
 	{"mem",              required_argument, 0, LONG_OPT_MEM},
-	{"mem-per-cpu",      required_argument, 0, LONG_OPT_MEM_PER_CPU},
 	{"mincpus",          required_argument, 0, LONG_OPT_MINCPUS},
 	{"mpi",              required_argument, 0, LONG_OPT_MPI},
 	{"msg-timeout",      required_argument, 0, LONG_OPT_TIMEO},
@@ -624,7 +623,6 @@ static void _opt_default(void)
 	pmi_server_max_threads(sropt.max_threads);
 	opt.max_nodes			= 0;
 	opt.mem_bind_type		= 0;
-	opt.mem_per_cpu			= NO_VAL64;
 	opt.min_nodes			= 1;
 	sropt.multi_prog			= false;
 	sropt.multi_prog_cmds		= 0;
@@ -1235,17 +1233,6 @@ static void _set_options(const int argc, char **argv)
 			opt.pn_min_memory = str_to_mbytes2(optarg);
 			opt.mem_per_cpu = NO_VAL64;
 			if (opt.pn_min_memory == NO_VAL64) {
-				error("invalid memory constraint %s",
-				      optarg);
-				exit(error_exit);
-			}
-			break;
-		case LONG_OPT_MEM_PER_CPU:
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			opt.mem_per_cpu = str_to_mbytes2(optarg);
-			opt.pn_min_memory = NO_VAL64;
-			if (opt.mem_per_cpu == NO_VAL64) {
 				error("invalid memory constraint %s",
 				      optarg);
 				exit(error_exit);
