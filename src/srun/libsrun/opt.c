@@ -130,7 +130,6 @@ int	_verbose = 0;
 /*---- forward declarations of static variables and functions  ----*/
 typedef struct env_vars env_vars_t;
 struct option long_options[] = {
-	{"extra-node-info",  required_argument, 0, 'B'},
 	{"cpus-per-task",    required_argument, 0, 'c'},
 	{"chdir",            required_argument, 0, 'D'},
 	{"error",            required_argument, 0, 'e'},
@@ -1146,21 +1145,6 @@ static void _set_options(const int argc, char **argv)
 			fprintf(stderr,
 				"Try \"srun --help\" for more information\n");
 			exit(error_exit);
-			break;
-		case (int)'B':
-			opt.extra_set = verify_socket_core_thread_count(
-						optarg,
-						&opt.sockets_per_node,
-						&opt.cores_per_socket,
-						&opt.threads_per_core,
-						&sropt.cpu_bind_type);
-			if (opt.extra_set == false) {
-				error("invalid resource allocation -B `%s'",
-					optarg);
-				exit(error_exit);
-			}
-			sropt.cpu_bind_type_set = true;
-			opt.threads_per_core_set = true;
 			break;
 		case (int)'c':
 			tmp_int = _get_int(optarg, "cpus-per-task", false);
