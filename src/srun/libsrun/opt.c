@@ -126,7 +126,6 @@ struct option long_options[] = {
 	{"preserve-env",     no_argument,       0, 'E'},
 	{"preserve-slurm-env", no_argument,     0, 'E'},
 	{"input",            required_argument, 0, 'i'},
-	{"job-name",         required_argument, 0, 'J'},
 	{"kill-on-bad-exit", optional_argument, 0, 'K'},
 	{"label",            no_argument,       0, 'l'},
 	{"ntasks",           required_argument, 0, 'n'},
@@ -547,7 +546,6 @@ static void _opt_default(void)
 		opt.gid			= getgid();
 		xfree(sropt.ifname);
 		sropt.jobid		= NO_VAL;
-		xfree(opt.job_name);
 		sropt.job_name_set_cmd	= false;
 		sropt.job_name_set_env	= false;
 		sropt.kill_bad_exit	= NO_VAL;
@@ -1065,13 +1063,6 @@ static void _set_options(const int argc, char **argv)
 				sropt.ifname = xstrdup("/dev/null");
 			else
 				sropt.ifname = xstrdup(optarg);
-			break;
-		case (int)'J':
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			sropt.job_name_set_cmd = true;
-			xfree(opt.job_name);
-			opt.job_name = xstrdup(optarg);
 			break;
 		case (int)'K':
 			if (optarg)
