@@ -151,7 +151,6 @@ struct option long_options[] = {
 	{"export",           required_argument, 0, LONG_OPT_EXPORT},
 	{"gid",              required_argument, 0, LONG_OPT_GID},
 	{"help",             no_argument,       0, LONG_OPT_HELP},
-	{"hint",             required_argument, 0, LONG_OPT_HINT},
 	{"jobid",            required_argument, 0, LONG_OPT_JOBID},
 	{"mpi",              required_argument, 0, LONG_OPT_MPI},
 	{"msg-timeout",      required_argument, 0, LONG_OPT_TIMEO},
@@ -386,7 +385,6 @@ static slurm_opt_t *_opt_copy(void)
 	opt_dup->gpus_per_node = xstrdup(opt.gpus_per_node);
 	opt_dup->gpus_per_socket = xstrdup(opt.gpus_per_socket);
 	opt_dup->gpus_per_task = xstrdup(opt.gpus_per_task);
-	opt.hint_env = NULL;		/* Moved by memcpy */
 	sropt.hostfile = NULL;		/* Moved by memcpy */
 	opt_dup->srun_opt->ifname = xstrdup(sropt.ifname);
 	opt_dup->job_name = xstrdup(opt.job_name);
@@ -588,8 +586,6 @@ static void _opt_default(void)
 	opt.cpus_set			= false;
 	sropt.exclusive			= false;
 	opt.extra_set			= false;
-	opt.hint_env			= NULL;
-	opt.hint_set			= false;
 	sropt.hostfile			= NULL;
 	opt.job_flags			= 0;
 	opt.licenses			= NULL;
@@ -827,10 +823,6 @@ _process_env_var(env_vars_t *e, const char *val)
 		if (slurm_verify_cpu_bind(val, &sropt.cpu_bind,
 					  &sropt.cpu_bind_type, 0))
 			exit(error_exit);
-		break;
-	case OPT_HINT:
-		xfree(opt.hint_env);
-		opt.hint_env = xstrdup(val);
 		break;
 	case OPT_NODES:
 		sropt.nodes_set_env = get_resource_arg_range( val ,"OPT_NODES",
@@ -1332,22 +1324,6 @@ static void _set_options(const int argc, char **argv)
 						       "ntasks-per-core", true);
 			opt.ntasks_per_core_set  = true;
 			break;
-		case LONG_OPT_HINT:
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			/* Keep this logic after other options filled in */
-			if (verify_hint(optarg,
-					&opt.sockets_per_node,
-					&opt.cores_per_socket,
-					&opt.threads_per_core,
-					&opt.ntasks_per_core,
-					&sropt.cpu_bind_type)) {
-				exit(error_exit);
-			}
-			opt.hint_set = true;
-			opt.ntasks_per_core_set  = true;
-			opt.threads_per_core_set = true;
-			break;
 		case LONG_OPT_PTY:
 #ifdef HAVE_PTY_H
 			sropt.pty = true;
@@ -1608,12 +1584,11 @@ static bool _opt_verify(void)
 		verified = false;
 	}
 
-	if (opt.hint_env &&
-	    (!opt.hint_set &&
-	     ((sropt.cpu_bind_type == CPU_BIND_VERBOSE) ||
-	      !sropt.cpu_bind_type_set) &&
-	     !opt.ntasks_per_core_set && !opt.threads_per_core_set)) {
-		if (verify_hint(opt.hint_env,
+	if (opt.hint &&
+	    ((sropt.cpu_bind_type == CPU_BIND_VERBOSE) ||
+	     !sropt.cpu_bind_type_set) &&
+	    !opt.ntasks_per_core_set && !opt.threads_per_core_set) {
+		if (verify_hint(opt.hint,
 				&opt.sockets_per_node,
 				&opt.cores_per_socket,
 				&opt.threads_per_core,
