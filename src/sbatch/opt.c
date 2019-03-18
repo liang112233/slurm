@@ -179,7 +179,6 @@ static void _opt_default(bool first_pass)
 		sbopt.umask		= -1;
 		sbopt.wait		= false;
 		sbopt.wait_all_nodes	= NO_VAL16;
-		opt.x11			= 0;
 	}
 
 	/* All other options must be specified individually for each component
