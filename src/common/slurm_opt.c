@@ -1702,6 +1702,43 @@ static slurm_cli_opt_t slurm_opt_use_min_nodes = {
 	.reset_each_pass = true,
 };
 
+static int arg_set_wait_all_nodes(slurm_opt_t *opt, const char *arg)
+{
+	if (!opt->salloc_opt)
+		return SLURM_ERROR;
+
+	opt->salloc_opt->wait_all_nodes = parse_int("--wait-all-nodes", arg,
+						    false);
+
+	if ((opt->salloc_opt->wait_all_nodes < 0) ||
+	    (opt->salloc_opt->wait_all_nodes > 1)) {
+		error("Invalid --wait-all-nodes specification");
+		exit(-1);
+	}
+
+	return SLURM_SUCCESS;
+}
+static char *arg_get_wait_all_nodes(slurm_opt_t *opt)
+{
+	if (!opt->salloc_opt)
+		return xstrdup("invalid-context");
+
+	return xstrdup_printf("%d", opt->salloc_opt->wait_all_nodes);
+}
+static void arg_reset_wait_all_nodes(slurm_opt_t *opt)
+{
+	if (opt->salloc_opt)
+		opt->salloc_opt->wait_all_nodes = NO_VAL16;
+}
+static slurm_cli_opt_t slurm_opt_wait_all_nodes = {
+	.name = "wait-all-nodes",
+	.has_arg = required_argument,
+	.val = LONG_OPT_WAIT_ALL_NODES,
+	.set_func_salloc = arg_set_wait_all_nodes,
+	.get_func = arg_get_wait_all_nodes,
+	.reset_func = arg_reset_wait_all_nodes,
+};
+
 COMMON_STRING_OPTION(wckey);
 static slurm_cli_opt_t slurm_opt_wckey = {
 	.name = "wckey",
@@ -1782,6 +1819,7 @@ static slurm_cli_opt_t *common_options[] = {
 	&slurm_opt_time_min,
 	&slurm_opt_tmp,
 	&slurm_opt_use_min_nodes,
+	&slurm_opt_wait_all_nodes,
 	&slurm_opt_wckey,
 	NULL /* END */
 };
