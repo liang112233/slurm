@@ -704,6 +704,30 @@ static slurm_cli_opt_t slurm_opt_distribution = {
 	.reset_each_pass = true,
 };
 
+static int arg_set_efname(slurm_opt_t *opt, const char *arg)
+{
+	if (!opt->sbatch_opt)
+		return SLURM_ERROR;
+
+	xfree(opt->sbatch_opt->efname);
+	if (!xstrcasecmp(arg, "none"))
+		opt->sbatch_opt->efname = xstrdup("/dev/null");
+	else
+		opt->sbatch_opt->efname = xstrdup(arg);
+
+	return SLURM_SUCCESS;
+}
+COMMON_SBATCH_STRING_OPTION_GET(efname);
+COMMON_SBATCH_STRING_OPTION_RESET(efname);
+static slurm_cli_opt_t slurm_opt_error = {
+	.name = "error",
+	.has_arg = required_argument,
+	.val = 'e',
+	.set_func_sbatch = arg_set_efname,
+	.get_func = arg_get_efname,
+	.reset_func = arg_reset_efname,
+};
+
 COMMON_STRING_OPTION(exclude);
 static slurm_cli_opt_t slurm_opt_exclude = {
 	.name = "exclude",
@@ -2261,6 +2285,7 @@ static slurm_cli_opt_t *common_options[] = {
 	&slurm_opt_delay_boot,
 	&slurm_opt_dependency,
 	&slurm_opt_distribution,
+	&slurm_opt_error,
 	&slurm_opt_exclude,
 	&slurm_opt_exclusive,
 	&slurm_opt_extra_node_info,
