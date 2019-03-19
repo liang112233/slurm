@@ -160,7 +160,6 @@ struct option long_options[] = {
 	{"tasks-per-node",   required_argument, 0, LONG_OPT_NTASKSPERNODE},
 	{"test-only",        no_argument,       0, LONG_OPT_TEST_ONLY},
 	{"time-min",         required_argument, 0, LONG_OPT_TIME_MIN},
-	{"threads-per-core", required_argument, 0, LONG_OPT_THREADSPERCORE},
 	{NULL,               0,                 0, 0}
 	};
 char *opt_string =
@@ -570,7 +569,6 @@ static void _opt_default(void)
 	opt.sockets_per_node		= NO_VAL; /* requested sockets */
 	opt.spank_job_env_size		= 0;
 	opt.spank_job_env		= NULL;
-	opt.threads_per_core		= NO_VAL; /* requested threads */
 
 	/*
 	 * Reset some default values if running under a parallel debugger
@@ -1134,17 +1132,6 @@ static void _set_options(const int argc, char **argv)
 			if ((opt.cores_per_socket == 1) &&
 			    (max_val == INT_MAX))
 				opt.cores_per_socket = NO_VAL;
-			break;
-		case LONG_OPT_THREADSPERCORE:
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			max_val = 0;
-			get_resource_arg_range( optarg, "threads-per-core",
-						&opt.threads_per_core,
-						&max_val, true );
-			if ((opt.threads_per_core == 1) &&
-			    (max_val == INT_MAX))
-				opt.threads_per_core = NO_VAL;
 			break;
 		case LONG_OPT_NTASKSPERNODE:
 			if (!optarg)
