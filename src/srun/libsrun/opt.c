@@ -171,7 +171,6 @@ struct option long_options[] = {
 	{"time-min",         required_argument, 0, LONG_OPT_TIME_MIN},
 	{"threads-per-core", required_argument, 0, LONG_OPT_THREADSPERCORE},
 	{"uid",              required_argument, 0, LONG_OPT_UID},
-	{"usage",            no_argument,       0, LONG_OPT_USAGE},
 	{NULL,               0,                 0, 0}
 	};
 char *opt_string =
@@ -203,7 +202,6 @@ static void  _process_env_var(env_vars_t *e, const char *val);
 static char *_read_file(char *fname);
 static void  _set_options(const int argc, char **argv);
 static bool  _under_parallel_debugger(void);
-static void  _usage(void);
 static bool  _valid_node_list(char **node_list_pptr);
 
 /*---[ end forward declarations of static functions ]---------------------*/
@@ -1204,9 +1202,6 @@ static void _set_options(const int argc, char **argv)
 		case LONG_OPT_HELP:
 			_help();
 			exit(0);
-		case LONG_OPT_USAGE:
-			_usage();
-			exit(0);
 		case LONG_OPT_TEST_ONLY:
 			sropt.test_only = true;
 			break;
@@ -2042,7 +2037,7 @@ static bool _under_parallel_debugger (void)
 	return (MPIR_being_debugged != 0);
 }
 
-static void _usage(void)
+extern void srun_usage(void)
 {
  	printf(
 "Usage: srun [-N nnodes] [-n ntasks] [-i in] [-o out] [-e err]\n"
