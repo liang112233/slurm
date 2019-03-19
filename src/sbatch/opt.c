@@ -156,7 +156,6 @@ static void _opt_default(bool first_pass)
 		xfree(sbopt.ckpt_interval_str);
 		xfree(sbopt.export_env);
 		xfree(sbopt.export_file);
-		sbopt.ifname		= xstrdup("/dev/null");
 		xfree(sbopt.ofname);
 		sbopt.parsable		= false;
 		xfree(sbopt.propagate); 	 /* propagate specific rlimits */
@@ -354,7 +353,6 @@ _process_env_var(env_vars_t *e, const char *val)
 /*---[ command line option processing ]-----------------------------------*/
 
 static struct option long_options[] = {
-	{"input",         required_argument, 0, 'i'},
 	{"kill-on-invalid-dep", required_argument, 0, LONG_OPT_KILL_INV_DEP},
 	{"output",        required_argument, 0, 'o'},
 	{"wait",          no_argument,       0, 'W'},
@@ -748,15 +746,6 @@ static void _set_options(int argc, char **argv)
 	while ((opt_char = getopt_long(argc, argv, opt_string,
 				       optz, &option_index)) != -1) {
 		switch (opt_char) {
-		case 'i':
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			xfree(sbopt.ifname);
-			if (xstrcasecmp(optarg, "none") == 0)
-				sbopt.ifname = xstrdup("/dev/null");
-			else
-				sbopt.ifname = xstrdup(optarg);
-			break;
 		case 'o':
 			if (!optarg)
 				break;	/* Fix for Coverity false positive */

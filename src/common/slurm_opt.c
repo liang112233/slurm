@@ -1122,6 +1122,30 @@ static slurm_cli_opt_t slurm_opt_immediate = {
 	.reset_func = arg_reset_immediate,
 };
 
+static int arg_set_ifname(slurm_opt_t *opt, const char *arg)
+{
+	if (!opt->sbatch_opt)
+		return SLURM_ERROR;
+
+	xfree(opt->sbatch_opt->ifname);
+	if (!xstrcasecmp(arg, "none"))
+		opt->sbatch_opt->ifname = xstrdup("/dev/null");
+	else
+		opt->sbatch_opt->ifname = xstrdup(arg);
+
+	return SLURM_SUCCESS;
+}
+COMMON_SBATCH_STRING_OPTION_GET(ifname);
+COMMON_SBATCH_STRING_OPTION_RESET(ifname);
+static slurm_cli_opt_t slurm_opt_input = {
+	.name = "input",
+	.has_arg = required_argument,
+	.val = 'i',
+	.set_func_sbatch = arg_set_ifname,
+	.get_func = arg_get_ifname,
+	.reset_func = arg_reset_ifname,
+};
+
 static int arg_set_job_name(slurm_opt_t *opt, const char *arg)
 {
 	if (opt->srun_opt)
@@ -2303,6 +2327,7 @@ static slurm_cli_opt_t *common_options[] = {
 	&slurm_opt_hint,
 	&slurm_opt_hold,
 	&slurm_opt_immediate,
+	&slurm_opt_input,
 	&slurm_opt_job_name,
 	&slurm_opt_kill_command,
 	&slurm_opt_licenses,
