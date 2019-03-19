@@ -86,7 +86,6 @@
 #define OPT_INT         0x01
 #define OPT_STRING      0x02
 #define OPT_DISTRIB     0x04
-#define OPT_NODES       0x05
 #define OPT_COMPRESS	0x07
 #define OPT_RESV_PORTS	0x09
 #define OPT_MPI         0x0c
@@ -124,7 +123,6 @@ struct option long_options[] = {
 	{"input",            required_argument, 0, 'i'},
 	{"kill-on-bad-exit", optional_argument, 0, 'K'},
 	{"label",            no_argument,       0, 'l'},
-	{"nodes",            required_argument, 0, 'N'},
 	{"output",           required_argument, 0, 'o'},
 	{"relative",         required_argument, 0, 'r'},
 	{"threads",          required_argument, 0, 'T'},
@@ -562,14 +560,9 @@ static void _opt_default(void)
 	opt.licenses			= NULL;
 	sropt.max_threads		= MAX_THREADS;
 	pmi_server_max_threads(sropt.max_threads);
-	opt.max_nodes			= 0;
 	opt.mem_bind_type		= 0;
-	opt.min_nodes			= 1;
 	sropt.multi_prog			= false;
 	sropt.multi_prog_cmds		= 0;
-	opt.nodes_set			= false;
-	sropt.nodes_set_env		= false;
-	sropt.nodes_set_opt		= false;
 	opt.ntasks_per_core		= NO_VAL;
 	opt.ntasks_per_core_set 	= false;
 	opt.ntasks_per_node		= NO_VAL; /* ntask max limits */
@@ -649,7 +642,7 @@ env_vars_t env_vars[] = {
 {"SLURM_HINT",          OPT_HINT,       NULL,               NULL             },
 {"SLURM_JOB_ID",        OPT_INT,        &sropt.jobid,       NULL             },
 {"SLURM_JOB_NAME",      OPT_STRING,     &opt.job_name,  &sropt.job_name_set_env},
-{"SLURM_JOB_NUM_NODES", OPT_NODES,      NULL,               NULL             },
+  { "SLURM_JOB_NUM_NODES", 'N' },
 {"SLURM_JOB_NODELIST",  OPT_STRING,     &sropt.alloc_nodelist,NULL           },
 {"SLURM_KILL_BAD_EXIT", OPT_INT,        &sropt.kill_bad_exit,NULL            },
 {"SLURM_LABELIO",       OPT_INT,        &sropt.labelio,     NULL             },
@@ -794,17 +787,6 @@ _process_env_var(env_vars_t *e, const char *val)
 					  &sropt.cpu_bind_type, 0))
 			exit(error_exit);
 		break;
-	case OPT_NODES:
-		sropt.nodes_set_env = get_resource_arg_range( val ,"OPT_NODES",
-							     &opt.min_nodes,
-							     &opt.max_nodes,
-							     false);
-		if (sropt.nodes_set_env == false) {
-			error("\"%s=%s\" -- invalid node count. ignoring...",
-			      e->var, val);
-		} else
-			opt.nodes_set = sropt.nodes_set_env;
-		break;
 	case OPT_EXPORT:
 		xfree(sropt.export_env);
 		sropt.export_env = xstrdup(val);
@@ -937,7 +919,6 @@ static void _set_options(const int argc, char **argv)
 {
 	int opt_char, option_index = 0, max_val = 0;
 	struct utsname name;
-	bool nodes_set_opt = false;
 
 #ifdef HAVE_PTY_H
 	char *tmp_str;
@@ -994,23 +975,6 @@ static void _set_options(const int argc, char **argv)
 			break;
 		case (int)'l':
 			sropt.labelio = true;
-			break;
-		case (int)'N':
-			if (!optarg)
-				break;	/* Fix for Coverity false positive */
-			nodes_set_opt = true;
-			sropt.nodes_set_opt =
-				get_resource_arg_range( optarg,
-							"requested node count",
-							&opt.min_nodes,
-							&opt.max_nodes, true );
-
-			if (sropt.nodes_set_opt == false) {
-				error("invalid resource allocation -N `%s'",
-				      optarg);
-				exit(error_exit);
-			} else
-				opt.nodes_set = sropt.nodes_set_opt;
 			break;
 		case (int)'o':
 			if (!optarg)
@@ -1471,7 +1435,7 @@ static bool _opt_verify(void)
 	if (((opt.distribution & SLURM_DIST_STATE_BASE) == SLURM_DIST_ARBITRARY)) {
 		if (slurm_option_set_by_env('n'))
 			opt.ntasks_set = false;
-		if (!nodes_set_opt)
+		if (slurm_option_set_by_env('N'))
 			opt.nodes_set = false;
 	}
 
@@ -1553,7 +1517,6 @@ static bool _opt_verify(void)
 		}
 		if (!opt.nodes_set) {
 			opt.nodes_set = true;
-			sropt.nodes_set_opt = true;
 			hostlist_uniq(hl);
 			opt.min_nodes = opt.max_nodes = hostlist_count(hl);
 		}
@@ -1711,14 +1674,21 @@ static bool _opt_verify(void)
 		 *  make sure # of procs >= min_nodes
 		 */
 		if ((opt.ntasks < opt.min_nodes) && (opt.ntasks > 0)) {
+			char *tmp = NULL;
 			info ("Warning: can't run %d processes on %d "
 			      "nodes, setting nnodes to %d",
 			      opt.ntasks, opt.min_nodes, opt.ntasks);
 			opt.min_nodes = opt.ntasks;
-			sropt.nodes_set_opt = true;
 			if (opt.max_nodes
 			    &&  (opt.min_nodes > opt.max_nodes) )
 				opt.max_nodes = opt.min_nodes;
+			/*
+			 * This will force the set_by_env flag to false,
+			 * which influences future decisions.
+			 */
+			xstrfmtcat(tmp, "%d", opt.min_nodes);
+			slurm_process_option(&opt, 'N', tmp, false, false);
+			xfree(tmp);
 			if (hl_cnt > opt.min_nodes) {
 				int del_cnt, i;
 				char *host;
